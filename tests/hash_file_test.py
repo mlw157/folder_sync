@@ -1,5 +1,4 @@
 import pytest
-
 from folder_sync.utils.hash_file import compute_file_hash
 
 #TEST_DIR = "../testcases/hash/" originally used a testcases folder but found this https://docs.pytest.org/en/stable/how-to/tmp_path.html
@@ -9,7 +8,7 @@ def test_compute_file_hash(tmp_path):
     test_file.write_text("Hello!!!")
 
     got = compute_file_hash(test_file)
-    want = "fdb6c763a7a4e9e6ce1545d454bafce9"
+    want = "0f5c512c77798eeb751bf68ba2d1de815d10dd921da46c77968c5c16fa645a6f"
 
     assert got == want
 
@@ -18,7 +17,7 @@ def test_compute_file_hash_empty(tmp_path):
     empty_file.write_text("")
 
     got = compute_file_hash(empty_file)
-    want = "d41d8cd98f00b204e9800998ecf8427e"
+    want = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 
     assert got == want
 
