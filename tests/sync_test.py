@@ -1,4 +1,3 @@
-import pathlib
 from folder_sync.core.sync import sync_folders, get_files_to_remove
 
 def test_sync(tmp_path):
@@ -17,80 +16,79 @@ def test_sync(tmp_path):
     sync_folders(tmp_path, None)
 
 
-def test_get_files_to_remove(tmp_path):
-    src = tmp_path / "src"
-    src.mkdir()
-    dest = tmp_path / "dest"
-    dest.mkdir()
+class TestGetFilesToRemove:
+    """tests for the get_files_to_remove function"""
 
-    extra_dir = dest / "dir"
-    extra_dir.mkdir()
+    def test_get_files_to_remove(self, tmp_path):
+        src = tmp_path / "src"
+        src.mkdir()
+        dest = tmp_path / "dest"
+        dest.mkdir()
 
-    mutual_file_src = src / "mutual_file.txt"
-    mutual_file_src.write_text("this file is in src and dest")
-    mutual_file_dest = dest / "mutual_file.txt"
-    mutual_file_dest.write_text("this file is in src and dest")
+        extra_dir = dest / "dir"
+        extra_dir.mkdir()
 
-    dest_only_file1 = dest / "dest_only_file1.txt"
-    dest_only_file1.write_text("this file is only in dest folder")
-    dest_only_file2 = dest / "dest_only_file2.txt"
-    dest_only_file2.write_text("this file is only in dest folder")
-    dest_only_file3 = extra_dir / "dest_only_file3.txt"
-    dest_only_file3.write_text("this file is only in dest folder")
+        mutual_file_src = src / "mutual_file.txt"
+        mutual_file_src.write_text("this file is in src and dest")
+        mutual_file_dest = dest / "mutual_file.txt"
+        mutual_file_dest.write_text("this file is in src and dest")
 
-    got = set(get_files_to_remove(src, dest))
-    want = {dest_only_file1, dest_only_file2, dest_only_file3}
+        dest_only_file1 = dest / "dest_only_file1.txt"
+        dest_only_file1.write_text("this file is only in dest folder")
+        dest_only_file2 = dest / "dest_only_file2.txt"
+        dest_only_file2.write_text("this file is only in dest folder")
+        dest_only_file3 = extra_dir / "dest_only_file3.txt"
+        dest_only_file3.write_text("this file is only in dest folder")
 
-    assert got == want
+        got = set(get_files_to_remove(src, dest))
+        want = {dest_only_file1, dest_only_file2, dest_only_file3}
 
-def test_get_files_to_remove_empty(tmp_path):
-    src = tmp_path / "src"
-    src.mkdir()
-    dest = tmp_path / "dest"
-    dest.mkdir()
+        assert got == want
 
+    def test_get_files_to_remove_empty(self, tmp_path):
+        src = tmp_path / "src"
+        src.mkdir()
+        dest = tmp_path / "dest"
+        dest.mkdir()
 
-    got = len(get_files_to_remove(src, dest))
-    want = 0
+        got = len(get_files_to_remove(src, dest))
+        want = 0
 
-    assert got == want
+        assert got == want
 
+    def test_get_files_to_remove_same_file_different_dirs(self, tmp_path):
+        src = tmp_path / "src"
+        src.mkdir()
+        dest = tmp_path / "dest"
+        dest.mkdir()
 
-def test_get_files_to_remove_no_match(tmp_path):
-    src = tmp_path / "src"
-    src.mkdir()
-    dest = tmp_path / "dest"
-    dest.mkdir()
+        dir1 = src / "src_dir"
+        dir1.mkdir()
+        dir2 = dest / "dest_dir"
+        dir2.mkdir()
 
-    mutual_file_src = src / "mutual_file.txt"
-    mutual_file_src.write_text("this file is in src and dest")
-    mutual_file_dest = dest / "mutual_file.txt"
-    mutual_file_dest.write_text("this file is in src and dest")
+        src_file = dir1 / "same_name.txt"
+        src_file.write_text("same content")
+        dest_file = dir2 / "same_name.txt"
+        dest_file.write_text("same content")
 
-    got = len(get_files_to_remove(src, dest))
-    want = 0
+        got = set(get_files_to_remove(src, dest))
+        want = {dest_file}
 
-    assert got == want
+        assert got == want
 
-def test_get_files_to_remove_same_file_different_dirs(tmp_path):
-    src = tmp_path / "src"
-    src.mkdir()
-    dest = tmp_path / "dest"
-    dest.mkdir()
+    def test_get_files_to_remove_no_match(self, tmp_path):
+        src = tmp_path / "src"
+        src.mkdir()
+        dest = tmp_path / "dest"
+        dest.mkdir()
 
-    dir1 = src / "src_dir"
-    dir1.mkdir()
-    dir2 = dest / "dest_dir"
-    dir2.mkdir()
+        mutual_file_src = src / "mutual_file.txt"
+        mutual_file_src.write_text("this file is in src and dest")
+        mutual_file_dest = dest / "mutual_file.txt"
+        mutual_file_dest.write_text("this file is in src and dest")
 
-    src_file = dir1 / "same_name.txt"
-    src_file.write_text("same content")
-    dest_file = dir2 / "same_name.txt"
-    dest_file.write_text("same content")
+        got = len(get_files_to_remove(src, dest))
+        want = 0
 
-    got = set(get_files_to_remove(src, dest))
-    want = {dest_file}
-
-    assert got == want
-
-
+        assert got == want
