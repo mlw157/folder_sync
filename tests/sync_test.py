@@ -1,62 +1,46 @@
-from folder_sync.core.sync import sync_folders, get_files_to_remove
-
-def test_sync(tmp_path):
-    test_file1 = tmp_path / "test_file1.txt"
-    test_file2 = tmp_path / "test_file2.txt"
-    test_dir = tmp_path / "dir"
-    test_dir.mkdir()
-
-    test_file3 = test_dir / "test_file3.txt"
+from folder_sync.core.sync import yield_entries_to_remove, remove_extra_entries
 
 
-    test_file1.write_text("hello1")
-    test_file2.write_text("hello2")
-    test_file3.write_text("hello3")
-
-    sync_folders(tmp_path, None)
-
-
-class TestGetFilesToRemove:
-    """tests for the get_files_to_remove function"""
-
-    def test_get_files_to_remove(self, tmp_path):
+class TestYieldEntriesToRemove:
+    """tests for the yield_entries_to_remove function"""
+    def test_yield_entries_to_remove(self, tmp_path):
         src = tmp_path / "src"
         src.mkdir()
         dest = tmp_path / "dest"
         dest.mkdir()
 
-        extra_dir = dest / "dir"
-        extra_dir.mkdir()
+        dest_only_file = dest / "dest_only_file.txt"
+        dest_only_file.write_text("this file is only in dest")
+        dest_only_dir = dest / "dest_only_dir"
+        dest_only_dir.mkdir()
 
         mutual_file_src = src / "mutual_file.txt"
         mutual_file_src.write_text("this file is in src and dest")
         mutual_file_dest = dest / "mutual_file.txt"
         mutual_file_dest.write_text("this file is in src and dest")
 
-        dest_only_file1 = dest / "dest_only_file1.txt"
-        dest_only_file1.write_text("this file is only in dest folder")
-        dest_only_file2 = dest / "dest_only_file2.txt"
-        dest_only_file2.write_text("this file is only in dest folder")
-        dest_only_file3 = extra_dir / "dest_only_file3.txt"
-        dest_only_file3.write_text("this file is only in dest folder")
+        mutual_dir_src = src / "mutual_dir"
+        mutual_dir_src.mkdir()
+        mutual_dir_dest = dest / "mutual_dir"
+        mutual_dir_dest.mkdir()
 
-        got = set(get_files_to_remove(src, dest))
-        want = {dest_only_file1, dest_only_file2, dest_only_file3}
+        got = set(yield_entries_to_remove(src, dest))
+        want = {dest_only_file, dest_only_dir}
 
         assert got == want
 
-    def test_get_files_to_remove_empty(self, tmp_path):
+    def test_yield_entries_to_remove_empty(self, tmp_path):
         src = tmp_path / "src"
         src.mkdir()
         dest = tmp_path / "dest"
         dest.mkdir()
 
-        got = len(get_files_to_remove(src, dest))
+        got = len(set(yield_entries_to_remove(src, dest)))
         want = 0
 
         assert got == want
 
-    def test_get_files_to_remove_same_file_different_dirs(self, tmp_path):
+    def test_yield_entries_to_remove_same_file_different_dirs(self, tmp_path):
         src = tmp_path / "src"
         src.mkdir()
         dest = tmp_path / "dest"
@@ -72,12 +56,12 @@ class TestGetFilesToRemove:
         dest_file = dir2 / "same_name.txt"
         dest_file.write_text("same content")
 
-        got = set(get_files_to_remove(src, dest))
-        want = {dest_file}
+        got = set(yield_entries_to_remove(src, dest))
+        want = {dest_file, dir2}
 
         assert got == want
 
-    def test_get_files_to_remove_no_match(self, tmp_path):
+    def test_yield_entries_to_remove_no_match(self, tmp_path):
         src = tmp_path / "src"
         src.mkdir()
         dest = tmp_path / "dest"
@@ -88,7 +72,47 @@ class TestGetFilesToRemove:
         mutual_file_dest = dest / "mutual_file.txt"
         mutual_file_dest.write_text("this file is in src and dest")
 
-        got = len(get_files_to_remove(src, dest))
+        got = len(set(yield_entries_to_remove(src, dest)))
         want = 0
 
         assert got == want
+
+
+class TestRemoveExtraEntries:
+    def test_remove_extra_entries(self, tmp_path):
+        src = tmp_path / "src"
+        src.mkdir()
+        dest = tmp_path / "dest"
+        dest.mkdir()
+
+        dest_only_file = dest / "dest_only_file.txt"
+        dest_only_file.write_text("this file is only in dest")
+        dest_only_dir = dest / "dest_only_dir"
+        dest_only_dir.mkdir()
+
+        mutual_file_src = src / "mutual_file.txt"
+        mutual_file_src.write_text("this file is in src and dest")
+        mutual_file_dest = dest / "mutual_file.txt"
+        mutual_file_dest.write_text("this file is in src and dest")
+
+        mutual_dir_src = src / "mutual_dir"
+        mutual_dir_src.mkdir()
+        mutual_dir_dest = dest / "mutual_dir"
+        mutual_dir_dest.mkdir()
+
+        remove_extra_entries(src, dest)
+
+        assert not dest_only_file.exists()
+        assert not dest_only_dir.exists()
+        assert mutual_dir_dest.exists()
+        assert mutual_file_dest.exists()
+
+
+    def test_remove_extra_entries_empty(self, tmp_path):
+        src = tmp_path / "src"
+        src.mkdir()
+        dest = tmp_path / "dest"
+        dest.mkdir()
+
+        remove_extra_entries(src, dest) # no asserts but to test it runs without an error
+
