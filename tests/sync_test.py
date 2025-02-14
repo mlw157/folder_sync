@@ -80,3 +80,21 @@ class TestSyncDirectories:
 
         assert (dest / "dir1" / "dir2" / "nested_file.txt").exists()
 
+    def test_synchronize_dirs_src_does_not_exist(self, tmp_path):
+        src = tmp_path / "src"
+
+        dest = tmp_path / "dest"
+        dest.mkdir()
+
+        synchronize_dirs(src, dest, logger) # no asserts but to test it runs without an error
+
+    def test_synchronize_dirs_dest_does_not_exist(self, tmp_path):
+        src = tmp_path / "src"
+        src.mkdir()
+
+        dest = tmp_path / "dest"
+
+        synchronize_dirs(src, dest, logger)
+
+        assert dest.exists() # dest will be created
+
