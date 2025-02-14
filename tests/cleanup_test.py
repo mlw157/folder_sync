@@ -1,3 +1,5 @@
+from venv import logger
+
 from folder_sync.core.cleanup import yield_entries_to_remove, remove_extra_entries
 
 
@@ -100,7 +102,7 @@ class TestRemoveExtraEntries:
         mutual_dir_dest = dest / "mutual_dir"
         mutual_dir_dest.mkdir()
 
-        remove_extra_entries(src, dest)
+        remove_extra_entries(src, dest, logger)
 
         assert not dest_only_file.exists()
         assert not dest_only_dir.exists()
@@ -114,4 +116,4 @@ class TestRemoveExtraEntries:
         dest = tmp_path / "dest"
         dest.mkdir()
 
-        remove_extra_entries(src, dest) # no asserts but to test it runs without an error
+        remove_extra_entries(src, dest, logger) # no asserts but to test it runs without an error

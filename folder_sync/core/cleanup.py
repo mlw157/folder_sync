@@ -23,14 +23,14 @@ def yield_entries_to_remove(src, dest):
                 yield dest_dir
 
 
-def remove_extra_entries(src, dest):
+def remove_extra_entries(src, dest, logger):
     for item in yield_entries_to_remove(src, dest):
         if item.is_file():
             item.unlink()
-            print("Deleted file " + item.name)
+            logger.info(f"Deleted file {item}")
         elif item.is_dir():
             item.rmdir()
-            print("Deleted directory " + item.name)
+            logger.info(f"Deleted directory {item}")
 
 
 

@@ -1,3 +1,5 @@
+from venv import logger
+
 import pytest
 from folder_sync.core.sync import synchronize_dirs
 
@@ -33,7 +35,7 @@ class TestSyncDirectories:
         changed_file_dest = dest / "changed_file.txt"
         changed_file_dest.write_text("original content")
 
-        synchronize_dirs(src, dest)
+        synchronize_dirs(src, dest, logger)
 
         assert not dest_only_dir.exists()
         assert not dest_only_file.exists()
@@ -58,7 +60,7 @@ class TestSyncDirectories:
         updated_file_dest = dest / "changed_file.txt"
         updated_file_dest.write_text("original content")
 
-        synchronize_dirs(src, dest)
+        synchronize_dirs(src, dest, logger)
 
         assert updated_file_dest.exists()
         assert updated_file_dest.read_text() == "changed content"
@@ -74,7 +76,7 @@ class TestSyncDirectories:
         nested_file = nested_dir / "nested_file.txt"
         nested_file.write_text("nested file")
 
-        synchronize_dirs(src, dest)
+        synchronize_dirs(src, dest, logger)
 
         assert (dest / "dir1" / "dir2" / "nested_file.txt").exists()
 
